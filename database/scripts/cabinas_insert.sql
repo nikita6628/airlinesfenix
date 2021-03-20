@@ -1,0 +1,1 @@
+INSERT INTO `cabinas`(`tipo`) VALUES ('Economica'),('Turista'),('Business')
