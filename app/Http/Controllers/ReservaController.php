@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reserva;
+use App\Models\Vuelo;
+use App\Models\Cabina;
+use App\Models\Estado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Auth;
+
 
 class ReservaController extends Controller
 {
@@ -19,8 +25,16 @@ class ReservaController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        return view('home');
+    { 
+        $id = Auth::user()->id;       
+        $reservas = DB::table('reservas')
+            ->join('vuelos', 'reservas.vuelo_id', '=', 'vuelos.id')
+            ->join('lugars', 'vuelos.origen_id', '=', 'lugars.id')
+            ->join('estados', 'vuelos.estado_id', '=', 'estados.id')
+            ->select('reservas.id','vuelos.nro_vuelo','vuelos.fecha_salida','lugars.ciudad','estados.tipo')
+            ->where('user_id',$id)
+            ->get();
+        return view('home')->with('reservas', $reservas);
     }
 
     /**
@@ -30,7 +44,11 @@ class ReservaController extends Controller
      */
     public function create()
     {
-        //
+        $usr = Auth::user();  
+        $vuelos = Vuelo::get();
+        return view('reservas.nueva')
+            ->with('vuelos', $vuelos)
+            ->with('usr', $usr);
     }
 
     /**
@@ -50,9 +68,22 @@ class ReservaController extends Controller
      * @param  \App\Models\Reserva  $reserva
      * @return \Illuminate\Http\Response
      */
-    public function show(Reserva $reserva)
+    public function show($id)
     {
-        //
+        $usr_id = Auth::user()->id;  
+        $reserva = DB::table('reservas as r')
+            ->join('vuelos as v', 'v.id', '=', 'r.vuelo_id')
+            ->join('cabinas as c', 'c.id', '=', 'r.cabina_id')
+            ->join('users as u', 'u.id', '=', 'r.user_id')
+            ->join('lugars as o', 'v.origen_id', '=', 'o.id')
+            ->join('lugars as d', 'v.destino_id', '=', 'd.id')
+            ->join('estados as e', 'v.estado_id', '=', 'e.id')
+            ->select('r.id', 'r.tarifa','r.asiento','v.nro_vuelo','v.fecha_salida','v.fecha_llegada','o.ciudad as origen','d.ciudad as destino','c.tipo as cabina','e.tipo as estado','e.descripcion','u.name','u.dni','u.email')
+            ->where('r.user_id',$usr_id)
+            ->where('r.id',$id)
+            ->get();
+
+        return view('reservas.detalle')->with('reserva', $reserva[0]);
     }
 
     /**
@@ -61,9 +92,21 @@ class ReservaController extends Controller
      * @param  \App\Models\Reserva  $reserva
      * @return \Illuminate\Http\Response
      */
-    public function edit(Reserva $reserva)
+    public function edit($id)
     {
-        //
+        $usr_id = Auth::user()->id;  
+        $reserva = DB::table('reservas as r')
+            ->join('vuelos as v', 'v.id', '=', 'r.vuelo_id')
+            ->join('cabinas as c', 'c.id', '=', 'r.cabina_id')
+            ->join('users as u', 'u.id', '=', 'r.user_id')
+            ->join('lugars as o', 'v.origen_id', '=', 'o.id')
+            ->join('lugars as d', 'v.destino_id', '=', 'd.id')
+            ->join('estados as e', 'v.estado_id', '=', 'e.id')
+            ->select('r.id', 'r.tarifa','r.asiento','v.nro_vuelo','v.fecha_salida','v.fecha_llegada','o.ciudad as origen','d.ciudad as destino','c.tipo as cabina','e.tipo as estado','e.descripcion')
+            ->where('r.user_id',$usr_id)
+            ->where('r.id',$id)
+            ->get();
+            return view('reservas.editar')->with('reserva', $reserva);
     }
 
     /**
@@ -73,7 +116,7 @@ class ReservaController extends Controller
      * @param  \App\Models\Reserva  $reserva
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Reserva $reserva)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -84,8 +127,15 @@ class ReservaController extends Controller
      * @param  \App\Models\Reserva  $reserva
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Reserva $reserva)
+    public function destroy($id)
     {
-        //
+        $reserva=Reserva::find($id);
+        $reserva->delete();
+
+        return redirect()->route('home')
+            ->with('success', 'La reserva se ha eliminado correctamente');
     }
 }
+
+
+
