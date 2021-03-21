@@ -2,6 +2,13 @@
 
 @section('content')
 <div class="container">
+    <div class="col-sm-12">
+        @if(session()->get('success'))
+            <div class="alert alert-success">
+                {{ session()->get('success') }}  
+            </div>
+        @endif
+    </div>
     <div class="row justify-content-center">
         <div class="col-md-10">
             <h1>Bienvenid@ <strong>{{ Auth::user()->name }}</strong> !!!</h1>   
@@ -31,7 +38,7 @@
                             <td>{{$reserva->fecha_salida}}</td>
                             <td>{{$reserva->ciudad}}</td>
                             <td>{{$reserva->tipo}}</td>
-                            <td><a class='btn btn-success' href="{{ url('reservas/'.$reserva->id) }}">Ver Detalle</a><a class='btn btn-danger' href="{{ url('reservas/'.$reserva->id.'/edit') }}">Editar</a></td>
+                            <td><a class='btn btn-success mr-2' href="{{ url('reservas/'.$reserva->id) }}">Ver Detalle</a><a class='btn btn-danger' href="{{ url('reservas/'.$reserva->id.'/edit') }}">Editar</a></td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -39,7 +46,7 @@
             @endif
 
             <h4>Cree una nueva reserva y vuele hacia sus sueños</h4>
-            <button class='btn btn-primary'>Nueva Reserva</button>
+            <a class='btn btn-primary' href="{{ url('reservas/create') }}">Nueva Reserva</a>
         </div>
     </div>
 </div>

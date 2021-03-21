@@ -21,6 +21,7 @@ class CreateVuelosTable extends Migration
             $table->dateTime('fecha_salida');
             $table->dateTime('fecha_llegada');
             $table->unsignedBigInteger('estado_id');
+            $table->decimal('precio_base');
             $table->timestamps();
             //fk
             $table->foreign('origen_id')->references('id')->on('lugars');
@@ -39,3 +40,5 @@ class CreateVuelosTable extends Migration
         Schema::dropIfExists('vuelos');
     }
 }
+
+
