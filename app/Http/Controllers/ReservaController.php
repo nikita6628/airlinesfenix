@@ -45,10 +45,18 @@ class ReservaController extends Controller
     public function create()
     {
         $usr = Auth::user();  
-        $vuelos = Vuelo::get();
+        $vuelos = DB::table('vuelos as v')
+            ->join('lugars as o', 'v.origen_id', '=', 'o.id')
+            ->join('lugars as d', 'v.destino_id', '=', 'd.id')
+            ->select('v.id','v.nro_vuelo','v.fecha_salida','v.fecha_llegada','o.ciudad as origen','d.ciudad as destino','v.precio_base')
+            ->get();
+        $cabinas=Cabina::get();
+        $asientos=[1,2,3,4,5,6,7,8,9,10];
         return view('reservas.nueva')
             ->with('vuelos', $vuelos)
-            ->with('usr', $usr);
+            ->with('usr', $usr)
+            ->with('cabinas',$cabinas)
+            ->with('asientos',$asientos);
     }
 
     /**
@@ -59,8 +67,20 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $request->request->add(['user_id' => Auth::user()->id]);
+        $request->validate([
+           'user_id' => 'required',
+           'vuelo_id' => 'required',
+           'cabina_id' => 'required',
+           'asiento' => 'required',
+           'tarifa' => 'required'
+       ]);
+       
+       Reserva::create($request->all());
+    
+       return redirect()->route('home')
+                       ->with('success','La reserva ha sido creada exitosamente!!');
+   }
 
     /**
      * Display the specified resource.
@@ -133,7 +153,7 @@ class ReservaController extends Controller
         $reserva->delete();
 
         return redirect()->route('home')
-            ->with('success', 'La reserva se ha eliminado correctamente');
+            ->with('success', 'La reserva se ha eliminada correctamente');
     }
 }
 
